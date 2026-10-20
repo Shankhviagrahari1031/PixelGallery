@@ -1,0 +1,106 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelGallery</title>
+    <link rel="stylesheet" href="{% static 'gallery/style.css' %}">
+</head>
+<body>
+
+<header class="navbar">
+    <a href="{% url 'home' %}" class="logo">
+        <span class="logo-icon">P</span> PixelGallery
+    </a>
+    <span class="nav-label">YOUR PERSONAL PHOTO SPACE</span>
+</header>
+
+<main class="container">
+
+    <section class="hero">
+        <p class="eyebrow">YOUR MOMENTS, YOUR SPACE</p>
+        <h1>A home for your <span>memories.</span></h1>
+        <p class="subtitle">
+            Keep your favourite moments together in one beautiful place.
+        </p>
+    </section>
+
+    <section class="toolbar">
+        <form method="GET" action="{% url 'home' %}" class="search-form">
+            <span class="search-icon">⌕</span>
+            <input type="text" name="q" placeholder="Search your images..."
+                   value="{{ query }}">
+            <button type="submit" class="search-button">Search</button>
+        </form>
+
+        <form method="POST" action="{% url 'upload_image' %}"
+              enctype="multipart/form-data" class="upload-form">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="Image title" required>
+            <label for="image-input" class="file-label">Choose image</label>
+            <input id="image-input" type="file" name="image"
+                   accept="image/*" required>
+            <button type="submit" class="upload-button">+ Upload</button>
+        </form>
+    </section>
+
+    <section class="gallery-section">
+        <div class="section-heading">
+            <div>
+                <h2>Your collection</h2>
+                <p>All the moments worth keeping.</p>
+            </div>
+            <span class="count">{{ images|length }} images</span>
+        </div>
+
+        {% if images %}
+        <div class="gallery-grid">
+            {% for item in images %}
+            <article class="image-card">
+                <a href="{{ item.image.url }}" target="_blank"
+                   rel="noopener noreferrer" class="image-link">
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                </a>
+
+                <div class="image-info">
+                    <div class="image-text">
+                        <h3>{{ item.title }}</h3>
+                        <p>{{ item.uploaded_at|date:"d M Y" }}</p>
+                    </div>
+
+                    <form method="POST"
+                          action="{% url 'delete_image' item.id %}"
+                          onsubmit="return confirm('Delete this image?');">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-button"
+                                aria-label="Delete {{ item.title }}">Delete</button>
+                    </form>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">▧</div>
+            <h3>{% if query %}No images found{% else %}Your gallery is waiting{% endif %}</h3>
+            <p>
+                {% if query %}
+                    Try another search term.
+                {% else %}
+                    Choose your first image above and start your collection.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+</main>
+
+<footer>
+    <p>Made with care · PixelGallery</p>
+</footer>
+
+</body>
+</html>
